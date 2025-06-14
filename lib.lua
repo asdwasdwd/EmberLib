@@ -667,7 +667,7 @@ function Ember:CreateWindow(config)
     window.Main.BackgroundColor3 = primaryColor
     window.Main.BorderSizePixel = 0
     window.Main.Position = UDim2.new(0.4, 0, 0.3, 0)
-    window.Main.Size = UDim2.new(0, 200, 0, 60) -- Start with smaller initial size
+    window.Main.Size = UDim2.new(0, 200, 0, 200)
     window.Main.Active = true
     window.Main.Draggable = true
     
@@ -687,94 +687,30 @@ function Ember:CreateWindow(config)
     
     createCorner(window.Header, 6)
     
-    -- Create Exit Button
-    window.ExitButton = Instance.new("TextButton")
-    window.ExitButton.Name = "ExitButton"
-    window.ExitButton.Parent = window.Main
-    window.ExitButton.BackgroundColor3 = Color3.fromRGB(80, 20, 20)
-    window.ExitButton.BorderSizePixel = 0
-    window.ExitButton.Position = UDim2.new(1, -20, 0, 5)
-    window.ExitButton.Size = UDim2.new(0, 15, 0, 15)
-    window.ExitButton.Font = Enum.Font.GothamBold
-    window.ExitButton.Text = "×"
-    window.ExitButton.TextColor3 = textColor
-    window.ExitButton.TextSize = 12
-    window.ExitButton.ZIndex = 15
-    
-    createCorner(window.ExitButton, 3)
-    
-    -- Exit button functionality (double-click to close)
-    local exitClickCount = 0
-    window.ExitButton.MouseButton1Click:Connect(function()
-        exitClickCount = exitClickCount + 1
-        
-        if exitClickCount == 1 then
-            window.ExitButton.Text = "!"
-            spawn(function()
-                wait(3)
-                if exitClickCount == 1 then
-                    exitClickCount = 0
-                    window.ExitButton.Text = "×"
-                end
-            end)
-        elseif exitClickCount >= 2 then
-            window:Destroy()
-            getgenv().EmberUI = nil
-        end
-    end)
-    
     -- Create Button Container
     window.ButtonContainer = Instance.new("Frame")
     window.ButtonContainer.Name = "ButtonContainer"
     window.ButtonContainer.Parent = window.Main
     window.ButtonContainer.BackgroundTransparency = 1
     window.ButtonContainer.Position = UDim2.new(0, 10, 0, 32)
-    window.ButtonContainer.Size = UDim2.new(1, -20, 1, -42) -- Adjusted for proper spacing
+    window.ButtonContainer.Size = UDim2.new(1, -20, 1, -40)
     
     createLayout(window.ButtonContainer, 6)
     
-    -- Auto-resize function (improved)
+    -- Auto-resize function
     local function updateWindowSize()
-        local contentHeight = 42 -- Base height for header and padding (25 header + 17 padding)
-        local elementCount = 0
-        
+        local contentHeight = 35 -- Base height for header and padding (reduced from 40)
         for _, child in pairs(window.ButtonContainer:GetChildren()) do
-            if child:IsA("GuiObject") and child.Visible and not child:IsA("UIListLayout") then
+            if child:IsA("GuiObject") and child.Visible then
                 contentHeight = contentHeight + child.Size.Y.Offset + 6 -- Add element height and padding
-                elementCount = elementCount + 1
             end
         end
-        
-        -- Remove extra padding from last element
-        if elementCount > 0 then
-            contentHeight = contentHeight - 6
-        end
-        
-        -- Add bottom padding
-        contentHeight = contentHeight + 10
-        
-        -- Set minimum height
-        local finalHeight = math.max(contentHeight, 60)
-        
-        window.Main.Size = UDim2.new(0, 200, 0, finalHeight)
+        window.Main.Size = UDim2.new(0, 200, 0, math.max(contentHeight, 100))
     end
     
-    -- Connect to layout changes with proper timing
-    window.ButtonContainer.ChildAdded:Connect(function()
-        wait() -- Wait for layout to update
-        updateWindowSize()
-    end)
-    
-    window.ButtonContainer.ChildRemoved:Connect(function()
-        wait() -- Wait for layout to update
-        updateWindowSize()
-    end)
-    
-    -- Initial size update
-    spawn(function()
-        wait(0.1)
-        updateWindowSize()
-    end)
+    -- Connect to layout changes
+    window.ButtonContainer.ChildAdded:Connect(updateWindowSize)
+    window.ButtonContainer.ChildRemoved:Connect(updateWindowSize)
     
     return window
 end
