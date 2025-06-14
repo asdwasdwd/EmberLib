@@ -736,13 +736,16 @@ function Ember:CreateWindow(config)
     window.ButtonContainer.Position = UDim2.new(0, 10, 0, 32)
     window.ButtonContainer.Size = UDim2.new(1, -20, 1, -40)
     
+    -- Store reference to layout before creating elements
+    local layout = createLayout(window.ButtonContainer, 6)
+    window.ButtonContainer.UIListLayout = layout
+    
     -- Auto-resize function
     local function updateWindowSize()
         local contentHeight = 32 -- Header height (25) + top padding (7)
-        local layoutPadding = window.ButtonContainer.UIListLayout.Padding.Offset
+        local layoutPadding = 6
         local elementCount = 0
         
-        -- Count total height of elements
         for _, child in pairs(window.ButtonContainer:GetChildren()) do
             if child:IsA("GuiObject") and child.Visible and not child:IsA("UIListLayout") then
                 contentHeight = contentHeight + child.Size.Y.Offset
@@ -750,26 +753,28 @@ function Ember:CreateWindow(config)
             end
         end
         
-        -- Add padding between elements (n-1 gaps for n elements)
-        if elementCount > 0 then
+        -- Add padding between elements
+        if elementCount > 1 then
             contentHeight = contentHeight + (elementCount - 1) * layoutPadding
         end
         
-        contentHeight = contentHeight + 7 -- Bottom padding to match top padding
+        contentHeight = contentHeight + 7 -- Bottom padding
         
-        -- Update the window size and recenter content
         window.Main.Size = UDim2.new(0, 200, 0, math.max(contentHeight, 100))
         
-        -- Force layout refresh after size change
-        window.ButtonContainer.UIListLayout:ApplyLayout()
+        -- Update ButtonContainer size to match new window size
+        window.ButtonContainer.Size = UDim2.new(1, -20, 1, -(32 + 7))
     end
-    
-    -- Store reference to layout
-    window.ButtonContainer.UIListLayout = createLayout(window.ButtonContainer, 6)
     
     -- Connect to layout changes
     window.ButtonContainer.ChildAdded:Connect(updateWindowSize)
     window.ButtonContainer.ChildRemoved:Connect(updateWindowSize)
+    
+    -- Initial size update
+    spawn(function() 
+        wait(0.1) -- Wait for initial UI elements to be added
+        updateWindowSize()
+    end)
     
     return window
 end
