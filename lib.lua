@@ -728,53 +728,59 @@ function Ember:CreateWindow(config)
         closeButton.BackgroundTransparency = 1
     end)
     
-    -- Create Button Container
-    window.ButtonContainer = Instance.new("Frame")
+    -- Create Button Container with fixed positioning
+    window.ButtonContainer = Instance.new("ScrollingFrame")
     window.ButtonContainer.Name = "ButtonContainer"
     window.ButtonContainer.Parent = window.Main
     window.ButtonContainer.BackgroundTransparency = 1
     window.ButtonContainer.Position = UDim2.new(0, 10, 0, 32)
-    window.ButtonContainer.Size = UDim2.new(1, -20, 1, -40)
+    window.ButtonContainer.Size = UDim2.new(1, -20, 1, -39)
+    window.ButtonContainer.ScrollBarThickness = 0
+    window.ButtonContainer.ScrollingEnabled = true
+    window.ButtonContainer.CanvasSize = UDim2.new(0, 0, 0, 0) -- Will be auto-adjusted
+    window.ButtonContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
     
-    -- Store reference to layout before creating elements
+    -- Create layout for button container
     local layout = createLayout(window.ButtonContainer, 6)
-    window.ButtonContainer.UIListLayout = layout
     
-    -- Auto-resize function
+    -- Force layout ordering
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    
+    -- Simple auto-resize function that ensures proper sizing
     local function updateWindowSize()
-        local contentHeight = 32 -- Header height (25) + top padding (7)
-        local layoutPadding = 6
-        local elementCount = 0
+        local totalHeight = 0
+        local paddingBetweenItems = 6
         
+        -- Count visible children
+        local visibleCount = 0
         for _, child in pairs(window.ButtonContainer:GetChildren()) do
             if child:IsA("GuiObject") and child.Visible and not child:IsA("UIListLayout") then
-                contentHeight = contentHeight + child.Size.Y.Offset
-                elementCount = elementCount + 1
+                totalHeight = totalHeight + child.Size.Y.Offset
+                visibleCount = visibleCount + 1
             end
         end
         
-        -- Add padding between elements
-        if elementCount > 1 then
-            contentHeight = contentHeight + (elementCount - 1) * layoutPadding
+        -- Add padding between items
+        if visibleCount > 1 then
+            totalHeight = totalHeight + ((visibleCount - 1) * paddingBetweenItems)
         end
         
-        contentHeight = contentHeight + 7 -- Bottom padding
+        -- Add top and bottom container padding
+        local minHeight = 100 -- Minimum window height
+        local containerPadding = 39 -- Header + padding
+        local frameHeight = math.max(minHeight, totalHeight + containerPadding)
         
-        window.Main.Size = UDim2.new(0, 200, 0, math.max(contentHeight, 100))
-        
-        -- Update ButtonContainer size to match new window size
-        window.ButtonContainer.Size = UDim2.new(1, -20, 1, -(32 + 7))
+        -- Update window size
+        window.Main.Size = UDim2.new(0, 200, 0, frameHeight)
     end
     
-    -- Connect to layout changes
-    window.ButtonContainer.ChildAdded:Connect(updateWindowSize)
-    window.ButtonContainer.ChildRemoved:Connect(updateWindowSize)
-    
-    -- Initial size update
-    spawn(function() 
-        wait(0.1) -- Wait for initial UI elements to be added
+    -- Connect to layout update events
+    window.ButtonContainer.ChildAdded:Connect(function()
+        task.wait() -- Wait a frame for layout to update
         updateWindowSize()
     end)
+    
+    window.ButtonContainer.ChildRemoved:Connect(updateWindowSize)
     
     return window
 end
