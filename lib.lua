@@ -687,25 +687,76 @@ function Ember:CreateWindow(config)
     
     createCorner(window.Header, 6)
     
+    -- Create Close Button
+    local closeButton = Instance.new("TextButton")
+    closeButton.Name = "CloseButton"
+    closeButton.Parent = window.Header
+    closeButton.BackgroundTransparency = 1
+    closeButton.Size = UDim2.new(0, 25, 1, 0)
+    closeButton.Position = UDim2.new(1, -25, 0, 0)
+    closeButton.Font = Enum.Font.GothamBold
+    closeButton.Text = "×"
+    closeButton.TextColor3 = textColor
+    closeButton.TextSize = 14
+    closeButton.ZIndex = 2
+    
+    local exitClickCount = 0
+    closeButton.MouseButton1Click:Connect(function()
+        exitClickCount = exitClickCount + 1
+        
+        if exitClickCount == 1 then
+            closeButton.Text = "!"
+            spawn(function()
+                wait(3)
+                if exitClickCount == 1 then
+                    exitClickCount = 0
+                    closeButton.Text = "×"
+                end
+            end)
+        elseif exitClickCount >= 2 then
+            window:Destroy()
+        end
+    end)
+    
+    -- Hover effects for close button
+    closeButton.MouseEnter:Connect(function()
+        closeButton.BackgroundTransparency = 0.8
+        closeButton.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+    end)
+    
+    closeButton.MouseLeave:Connect(function()
+        closeButton.BackgroundTransparency = 1
+    end)
+    
     -- Create Button Container
     window.ButtonContainer = Instance.new("Frame")
     window.ButtonContainer.Name = "ButtonContainer"
     window.ButtonContainer.Parent = window.Main
     window.ButtonContainer.BackgroundTransparency = 1
     window.ButtonContainer.Position = UDim2.new(0, 10, 0, 32)
-    window.ButtonContainer.Size = UDim2.new(1, -20, 1, -42) -- Changed to -42 to match top padding
+    window.ButtonContainer.Size = UDim2.new(1, -20, 1, -40)
     
     createLayout(window.ButtonContainer, 6)
     
     -- Auto-resize function
     local function updateWindowSize()
-        local contentHeight = 32 -- Base height for header (25) + top padding (7)
+        local contentHeight = 32 -- Header height (25) + top padding (7)
+        local layoutPadding = 6
+        local elementCount = 0
+        
         for _, child in pairs(window.ButtonContainer:GetChildren()) do
-            if child:IsA("GuiObject") and child.Visible then
-                contentHeight = contentHeight + child.Size.Y.Offset + 6 -- Add element height and padding
+            if child:IsA("GuiObject") and child.Visible and not child:IsA("UIListLayout") then
+                contentHeight = contentHeight + child.Size.Y.Offset
+                elementCount = elementCount + 1
             end
         end
-        contentHeight = contentHeight + 7 -- Add bottom padding to match top padding
+        
+        -- Add padding between elements (n-1 gaps for n elements)
+        if elementCount > 0 then
+            contentHeight = contentHeight + (elementCount - 1) * layoutPadding
+        end
+        
+        contentHeight = contentHeight + 10 -- Bottom padding
         window.Main.Size = UDim2.new(0, 200, 0, math.max(contentHeight, 100))
     end
     
