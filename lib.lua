@@ -699,7 +699,7 @@ function Ember:CreateWindow(config)
     
     -- Auto-resize function
     local function updateWindowSize()
-        local contentHeight = 35 -- Base height for header and padding (reduced from 40)
+        local contentHeight = 30 -- Base height for header and padding (reduced from 40)
         for _, child in pairs(window.ButtonContainer:GetChildren()) do
             if child:IsA("GuiObject") and child.Visible then
                 contentHeight = contentHeight + child.Size.Y.Offset + 6 -- Add element height and padding
