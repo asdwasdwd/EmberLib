@@ -1,11 +1,11 @@
 --[[
-	Usage:
+    Usage:
 
-	local Ember = loadstring(game:HttpGet("https://raw.githubusercontent.com/asdwasdwd/EmberLib/refs/heads/main/lib.lua"))()
+    local Ember = loadstring(game:HttpGet("https://raw.githubusercontent.com/asdwasdwd/EmberLib/refs/heads/main/lib.lua"))()
 
-	local Window = Ember:CreateWindow({
-		Name = "UI TITLE"
-	})
+    local Window = Ember:CreateWindow({
+        Name = "UI TITLE"
+    })
 ]]
 
 local Ember = {}
