@@ -12,7 +12,6 @@ local Ember = {}
 Ember.__index = Ember
 Ember.Flags = {}
 
-local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
 local primaryColor = Color3.fromRGB(35, 35, 35)
@@ -531,7 +530,7 @@ function Ember:CreateWindow(config)
 
     window.ScreenGui = Instance.new("ScreenGui")
     window.ScreenGui.Name = "EmberUI"
-    window.ScreenGui.Parent = Players.LocalPlayer.PlayerGui
+    window.ScreenGui.Parent = game.CoreGui
 
     window.Main = Instance.new("Frame")
     window.Main.Name = "Main"
